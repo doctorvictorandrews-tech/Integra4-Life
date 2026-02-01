@@ -1,45 +1,42 @@
+// app/layout.tsx
+// ARQUIVO COMPLETO E ATUALIZADO
+
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import CartSidebar from "@/components/CartSidebar";
-import { CartProvider } from "@/context/CartContext";
-import CustomCursor from "@/components/CustomCursor";
-import EnergyCompass from "@/components/EnergyCompass"; // <--- Importado aqui
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+const inter = Inter({ subsets: ["latin"] });
+const playfair = Playfair_Display({ 
+  subsets: ["latin"], 
+  variable: "--font-serif" 
+});
 
 export const metadata: Metadata = {
-  title: "Integra4 Life Store",
-  description: "Bem-estar integrativo.",
+  title: "Integra4 Life - Bem-Estar Integrativo",
+  description: "Sua jornada de conexão e bem-estar através das 4 dimensões do ser humano: Física, Mental, Emocional e Energética.",
+  keywords: "bem-estar, saúde integrativa, produtos naturais, 4 dimensões, autocuidado, equilíbrio",
+  authors: [{ name: "Integra4 Life" }],
+  openGraph: {
+    title: "Integra4 Life - Bem-Estar Integrativo",
+    description: "Produtos naturais para corpo, mente, emoção e energia",
+    type: "website",
+    locale: "pt_BR",
+  }
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${inter.variable} ${playfair.variable} font-sans bg-stone-50 text-stone-800 cursor-none`}>
-        {/* cursor-none esconde a seta padrão para usar o CustomCursor */}
-        
-        <div className="bg-noise" />
-        <CustomCursor />
-        
-        {/* Bússola Flutuante Adicionada */}
-        <EnergyCompass /> 
-        
-        <CartProvider>
-          <Navbar />
-          <CartSidebar />
-          <main className="pt-20 min-h-screen">
-            {children}
-          </main>
-          <Footer />
-        </CartProvider>
+    <html lang="pt-BR">
+      <body className={`${inter.className} ${playfair.variable} antialiased`}>
+        <Navbar />
+        {children}
+        <Footer />
       </body>
     </html>
   );

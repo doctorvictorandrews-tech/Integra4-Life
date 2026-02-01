@@ -1,97 +1,190 @@
-"use client";
+// components/ProductDetails.tsx
+// ARQUIVO COMPLETO E ATUALIZADO
 
+"use client";
 import { useState } from "react";
-import { checkoutAction } from "@/app/actions"; // Importa a ação segura
-import { Minus, Plus, ShoppingBag, ArrowLeft, Loader2 } from "lucide-react";
+import { checkoutAction } from "@/app/actions";
+import { Minus, Plus, ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
+import { getDimensionColor } from "@/lib/shopify";
 import Link from "next/link";
-import { motion } from "framer-motion";
 
 export default function ProductDetails({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Tratamento seguro dos dados
   const price = parseFloat(product.priceRange?.minVariantPrice?.amount || "0");
   const formattedPrice = `R$ ${price.toFixed(2).replace(".", ",")}`;
-  const mainImage = product.images?.edges[0]?.node?.url || "";
-  
-  // Pega o ID da variante para comprar
+  const mainImage = product.images?.edges[0]?.node?.url;
   const variantId = product.variants?.edges[0]?.node?.id;
+  const dimension = getDimensionColor(product.tags);
 
   const handleBuyNow = async () => {
-    if (!variantId) {
-      alert("Erro: Produto indisponível para compra direta.");
-      return;
-    }
-
+    if (!variantId) return alert("Erro: Produto indisponível.");
     setLoading(true);
     try {
-      // Chama a ação do servidor que criamos no app/actions.ts
       await checkoutAction(variantId, quantity);
     } catch (error) {
       console.error(error);
-      alert("Erro ao iniciar o checkout. Tente novamente.");
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] pt-32 pb-20">
-      <div className="max-w-6xl mx-auto px-6">
-        
-        <Link href="/loja" className="inline-flex items-center gap-2 text-stone-500 hover:text-[#2D1B4E] mb-8 text-sm uppercase tracking-widest transition-colors">
-          <ArrowLeft size={16} /> Voltar para Loja
+    <div className="min-h-screen bg-[#FAFAF9] pt-32 pb-20 px-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Breadcrumb - Voltar */}
+        <Link 
+          href="/loja" 
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-[#2D1B4E] mb-8 transition-colors"
+        >
+          <ArrowLeft size={20} />
+          Voltar para loja
         </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
-          
-          {/* Imagem */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="aspect-[4/5] bg-stone-100 rounded-lg overflow-hidden relative border border-stone-200">
-            {mainImage ? (
-              <img src={mainImage} alt={product.title} className="w-full h-full object-cover" />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-stone-400">Sem Imagem</div>
-            )}
-          </motion.div>
-
-          {/* Informações */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-col justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Coluna Esquerda - Imagens */}
+          <div>
+            {/* Imagem Principal */}
+            <div className="aspect-[4/5] bg-stone-100 rounded-xl overflow-hidden mb-4 shadow-lg">
+              {mainImage && (
+                <img 
+                  src={mainImage} 
+                  alt={product.title} 
+                  className="w-full h-full object-cover" 
+                />
+              )}
+            </div>
             
+            {/* Miniaturas (se houver mais imagens) */}
+            {product.images?.edges.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images.edges.slice(1, 5).map((img: any, idx: number) => (
+                  <div 
+                    key={idx} 
+                    className="aspect-square bg-stone-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-offset-2 transition-all"
+                    style={{ 
+                      ringColor: dimension.color 
+                    }}
+                  >
+                    <img 
+                      src={img.node.url} 
+                      alt={`${product.title} - ${idx + 2}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Coluna Direita - Informações */}
+          <div className="flex flex-col justify-center">
+            {/* Badge da Dimensão */}
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm font-bold mb-6 w-fit shadow-lg"
+              style={{ backgroundColor: dimension.color }}
+            >
+              <span className="text-lg">{dimension.icon}</span>
+              <span>Dimensão {dimension.name}</span>
+            </div>
+
+            {/* Título */}
             <h1 className="font-serif text-4xl md:text-5xl text-[#2D1B4E] mb-4 leading-tight">
               {product.title}
             </h1>
             
-            <p className="text-3xl font-light text-[#4A6C48] mb-8">{formattedPrice}</p>
+            {/* Preço */}
+            <p 
+              className="text-4xl font-bold mb-8"
+              style={{ color: dimension.color }}
+            >
+              {formattedPrice}
+            </p>
 
-            <div className="prose prose-stone mb-10 text-stone-600 font-light" dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+            {/* Descrição */}
+            {product.description && (
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-[#2D1B4E] mb-3">
+                  Sobre este produto
+                </h2>
+                <div 
+                  className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={{ 
+                    __html: product.descriptionHtml || product.description 
+                  }}
+                />
+              </div>
+            )}
 
             {/* Seletor de Quantidade */}
-            <div className="flex items-center gap-6 mb-8 border-y border-stone-200 py-6">
-              <span className="text-xs uppercase tracking-widest text-stone-500">Quantidade</span>
-              <div className="flex items-center gap-4 bg-white border border-stone-200 rounded-full px-4 py-2">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="hover:text-[#D4AF37]"><Minus size={16}/></button>
-                <span className="w-6 text-center font-medium">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="hover:text-[#D4AF37]"><Plus size={16}/></button>
+            <div className="mb-8">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Quantidade:
+              </label>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
+                  <button 
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                    className="p-3 hover:bg-gray-100 transition-colors"
+                  >
+                    <Minus size={18} className="text-gray-600" />
+                  </button>
+                  <span className="w-16 text-center font-bold text-lg">
+                    {quantity}
+                  </span>
+                  <button 
+                    onClick={() => setQuantity(quantity + 1)} 
+                    className="p-3 hover:bg-gray-100 transition-colors"
+                  >
+                    <Plus size={18} className="text-gray-600" />
+                  </button>
+                </div>
+                <span className="text-gray-600 text-sm">
+                  {quantity > 1 && `Total: R$ ${(price * quantity).toFixed(2).replace('.', ',')}`}
+                </span>
               </div>
             </div>
 
-            {/* BOTÃO DE COMPRA */}
+            {/* Botão Comprar */}
             <button 
               onClick={handleBuyNow}
               disabled={loading}
-              className="w-full bg-[#2D1B4E] text-white py-5 rounded-lg uppercase tracking-[0.2em] font-medium hover:bg-[#4A6C48] transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:-translate-y-1"
+              className="w-full py-4 rounded-full flex justify-center items-center gap-3 text-white font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+              style={{ backgroundColor: dimension.color }}
             >
               {loading ? (
-                <> <Loader2 className="animate-spin" /> Redirecionando... </>
+                <>
+                  <Loader2 className="animate-spin" size={24} />
+                  Processando...
+                </>
               ) : (
-                <> <ShoppingBag size={20} /> Comprar Agora </>
+                <>
+                  <ShoppingBag size={24} />
+                  Comprar Agora
+                </>
               )}
             </button>
-            
-            <p className="text-[10px] text-stone-400 mt-4 text-center uppercase tracking-wide">
-              Pagamento seguro via Shopify
-            </p>
-          </motion.div>
+
+            {/* Informações Adicionais */}
+            <div className="mt-10 pt-8 border-t border-gray-200 space-y-3">
+              <div className="flex items-start gap-3 text-sm text-gray-700">
+                <span className="text-green-600 text-lg">✓</span>
+                <span>Frete grátis para compras acima de R$ 150,00</span>
+              </div>
+              <div className="flex items-start gap-3 text-sm text-gray-700">
+                <span className="text-green-600 text-lg">✓</span>
+                <span>Produtos 100% naturais e selecionados</span>
+              </div>
+              <div className="flex items-start gap-3 text-sm text-gray-700">
+                <span className="text-green-600 text-lg">✓</span>
+                <span>7 dias para trocas e devoluções</span>
+              </div>
+              <div className="flex items-start gap-3 text-sm text-gray-700">
+                <span className="text-green-600 text-lg">✓</span>
+                <span>Pagamento seguro via Shopify</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
