@@ -62,9 +62,7 @@ export default function ProductDetails({ product }: { product: any }) {
                   <div 
                     key={idx} 
                     className="aspect-square bg-stone-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-offset-2 transition-all"
-                    style={{ 
-                      ringColor: dimension.color 
-                    }}
+            
                   >
                     <img 
                       src={img.node.url} 
