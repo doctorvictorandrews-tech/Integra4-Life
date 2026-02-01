@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    unoptimized: true, // Necessário para o plano gratuito do Cloudflare
+    unoptimized: true,
+  },
+  // O MÁGICO: Isso força o Cloudflare a entender que tudo é Edge ou Estático
+  experimental: {
+    runtime: 'edge',
   },
 };
 
