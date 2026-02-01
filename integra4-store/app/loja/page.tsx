@@ -2,6 +2,7 @@ import { getProducts } from "@/lib/shopify";
 import StoreGrid from "@/components/StoreGrid";
 
 // Força o site a buscar dados novos sempre (evita cache antigo)
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export default async function StorePage() {
